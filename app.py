@@ -3,7 +3,7 @@ from datetime import datetime
 import streamlit as st
 
 from modules.config import FILE_PATH, inject_custom_css
-from modules.data_loader import load_and_process_data, make_excel_download
+from modules.data_loader import load_and_process_data, calculate_active_sims, make_excel_download
 from modules.components import money, number, safe_html, section_heading, metric_card
 from modules.charts import (
     build_revenue_trend_chart,
@@ -86,10 +86,10 @@ st.markdown(
 )
 st.divider()
 
-# --- KPI METRICS (Using correct 55 baseline SIM count) ---
+# --- KPI METRICS ---
 total_revenue = filtered_cust["Total"].sum()
-# Using max SIM allocation per customer to reflect the true 55 baseline active fleet
-total_sims = int(filtered_cust.groupby("Customer Name")["No. of SIM Cards"].max().sum())
+# Calculate active SIMs using calculate_active_sims to correctly handle carry-overs
+total_sims = calculate_active_sims(filtered_cust, selected_years)
 unique_customers = filtered_cust["Customer Name"].nunique()
 average_yield = total_revenue / total_sims if total_sims > 0 else 0
 
