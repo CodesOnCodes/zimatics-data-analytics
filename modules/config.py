@@ -30,7 +30,7 @@ PALETTE = ["#159D91", "#4786C6", "#E9B949", "#9368C8", "#E17C70"]
 
 
 def inject_custom_css():
-    """Inject executive theme CSS into the Streamlit app."""
+    """Inject executive theme CSS into the Streamlit app with Zimatics branding."""
     st.markdown(
         """
         <style>
@@ -59,27 +59,28 @@ def inject_custom_css():
             color: #E9F1F5 !important;
         }
 
+        section[data-testid="stSidebar"] label {
+            font-weight: 600;
+        }
+
+        section[data-testid="stSidebar"] [data-baseweb="select"] {
+            background: #294354;
+            border-radius: 9px;
+        }
+
+        section[data-testid="stSidebar"] input {
+            color: #172B3A !important;
+        }
+
         .sidebar-brand {
-            padding: 12px 0 22px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.13);
-            margin-bottom: 24px;
+            padding: 15px 0 20px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.12);
+            margin-bottom: 20px;
+            text-align: left;
         }
 
-        .brand-icon {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 43px;
-            height: 43px;
-            background: linear-gradient(135deg, #159D91, #35C6A8);
-            border-radius: 13px;
-            font-size: 21px;
-            margin-bottom: 12px;
-            box-shadow: 0 6px 20px rgba(21,157,145,0.25);
-        }
-
-        .brand-name {
-            font-size: 19px;
+        .brand-logo-text {
+            font-size: 22px;
             font-weight: 800;
             letter-spacing: -0.5px;
             color: #FFFFFF;
@@ -166,6 +167,13 @@ def inject_custom_css():
             padding: 20px;
             min-height: 145px;
             box-shadow: 0 3px 12px rgba(23,43,58,0.035);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 28px rgba(23,43,58,0.09);
+            border-color: #B8DED7;
         }
 
         .metric-label {
@@ -173,6 +181,7 @@ def inject_custom_css():
             font-size: 11px;
             font-weight: 700;
             text-transform: uppercase;
+            letter-spacing: 0.7px;
         }
 
         .metric-value {
@@ -180,6 +189,7 @@ def inject_custom_css():
             font-weight: 800;
             color: #172B3A;
             margin-top: 17px;
+            letter-spacing: -0.8px;
         }
 
         .metric-footer {
@@ -195,6 +205,48 @@ def inject_custom_css():
             width: 100%;
             height: 3px;
             background: linear-gradient(90deg, #159D91, #6AD6B9);
+        }
+
+        .insight-panel {
+            background: linear-gradient(120deg, #172B3A, #24495A);
+            border-radius: 16px;
+            padding: 22px 24px;
+            color: white;
+            margin: 10px 0;
+            box-shadow: 0 7px 22px rgba(23,43,58,0.10);
+        }
+
+        .insight-title {
+            color: #FFFFFF;
+            font-size: 15px;
+            font-weight: 800;
+            margin-bottom: 12px;
+        }
+
+        .insight-text {
+            color: #C8D9E1;
+            font-size: 13px;
+            line-height: 1.8;
+        }
+
+        .insight-highlight {
+            color: #65D7B5;
+            font-weight: 700;
+        }
+
+        div[data-testid="stPlotlyChart"] {
+            background: #FFFFFF;
+            padding: 12px;
+            border-radius: 15px;
+            border: 1px solid #E7EDF2;
+            box-shadow: 0 3px 12px rgba(23,43,58,0.025);
+        }
+
+        div[data-testid="stDataFrame"] {
+            background: #FFFFFF;
+            border-radius: 13px;
+            border: 1px solid #E7EDF2;
+            overflow: hidden;
         }
 
         div[data-testid="stMarkdownContainer"] p strong {
