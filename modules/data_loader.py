@@ -50,15 +50,13 @@ def load_and_process_data(file_path, file_mtime):
         monthly_total = df[MONTHS].sum(axis=1)
         df["Total"] = df["Total"].where(df["Total"] != 0, monthly_total)
 
-        # Mirror Excel's =SUMIF(S6:S99, ">0", B6:B99) rule: exclude $0 rows
-        df = df[df["Total"] > 0].copy()
-
-        if df.empty:
-            continue
-
-        # Identify original activations vs. carry-forward rows from prior years
+        # Keep all 14 customer accounts visible, while mirroring Excel's
+        # =SUMIF(S6:S99, ">0", B6:B99) rule for billed SIM counts (55 SIMs)
         df["Is Carryover"] = df["Start Year"] != df["Schedule Year"]
-        df["Active Cohort SIMs"] = df["No. of SIM Cards"].where(~df["Is Carryover"], 0)
+        df["Active Cohort SIMs"] = df["No. of SIM Cards"].where(
+            (~df["Is Carryover"]) & (df["Total"] > 0), 0
+        )
+        df["Billed Sheet SIMs"] = df["No. of SIM Cards"].where(df["Total"] > 0, 0)
 
         all_records.append(df)
 
@@ -90,14 +88,12 @@ def load_and_process_data(file_path, file_mtime):
 
 
 def calculate_active_sims(filtered_cust, selected_years):
-    """Return the exact active SIM count without double-counting carry-overs."""
+    """Return the exact billed active SIM count (55 across 2026-2027) while keeping all 14 customers visible."""
     if filtered_cust.empty:
         return 0
-    # When viewing all years (or multiple years), sum only original cohort activations (55 SIMs)
     if len(selected_years) > 1:
         return int(filtered_cust["Active Cohort SIMs"].sum())
-    # When viewing a single year tab (e.g., 2027 alone), match that sheet's TOTAL row (25 SIMs)
-    return int(filtered_cust["No. of SIM Cards"].sum())
+    return int(filtered_cust["Billed Sheet SIMs"].sum())
 
 
 def make_excel_download(dataframe):
