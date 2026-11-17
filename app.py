@@ -12,7 +12,7 @@ from modules.charts import (
 )
 
 st.set_page_config(
-    page_title="SIM Revenue Intelligence",
+    page_title="Zimatics SIM Revenue Intelligence",
     page_icon="📊",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -77,7 +77,7 @@ st.markdown(
     f"""
     <div class="dashboard-header">
         <div>
-            <div class="header-title">Revenue Intelligence</div>
+            <div class="header-title">Zimatics Revenue Intelligence</div>
             <div class="header-subtitle">
                 SIM Connectivity Financial Performance &amp; Customer Analytics
                 <br>Reporting period: {min(selected_years) if selected_years else "—"} – {max(selected_years) if selected_years else "—"}
