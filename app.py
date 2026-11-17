@@ -30,16 +30,23 @@ df_customers, df_monthly = load_and_process_data(FILE_PATH, last_modified)
 
 # --- SIDEBAR ---
 with st.sidebar:
-    st.markdown(
-        """
-        <div class="sidebar-brand">
-            <div class="brand-icon">◈</div>
-            <div class="brand-name">SIM INTELLIGENCE</div>
-            <div class="brand-caption">Revenue Analytics Platform</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    logo_path = "assets/zimatics logo.webp"
+    if os.path.exists(logo_path):
+        st.image(logo_path, width=160, use_container_width=False)
+    else:
+        st.markdown(
+            """
+            <div class="sidebar-brand">
+                <div class="brand-logo-badge">Z</div>
+                <div class="brand-name">ZIMATICS</div>
+                <div class="brand-caption">Revenue Intelligence</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    st.markdown('<div class="sidebar-section">Dashboard Controls</div>', unsafe_allow_html=True)
+    # ... rest of your sidebar controls ...
     available_years = sorted(df_customers["Schedule Year"].unique().tolist())
     selected_years = st.multiselect("Reporting Years", options=available_years, default=available_years)
 
