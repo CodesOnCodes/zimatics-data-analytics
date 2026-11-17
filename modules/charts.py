@@ -53,7 +53,7 @@ def build_top_customers_chart(filtered_cust, top_n, show_data_labels):
         orientation="h",
         text="Revenue" if show_data_labels else None,
         color="Revenue",
-        color_continuous_scale=["#52B7AE", "#159D91", "#172B3A"],
+        color_continuous_scale=["#52B7AE", "#159D91", "#176B67"],
         labels={"Revenue": "Revenue (GH₵)", "Bold Name": ""},
     )
     if show_data_labels:
@@ -73,7 +73,11 @@ def build_top_customers_chart(filtered_cust, top_n, show_data_labels):
 
 
 def build_fleet_donut_chart(filtered_cust, total_sims):
-    fleet_data = filtered_cust.groupby("Customer Name", as_index=False).agg({"No. of SIM Cards": "max"})
+    # Use Active Cohort SIMs if multiple years are selected to avoid double counting carry-overs
+    sim_col = "Active Cohort SIMs" if "Active Cohort SIMs" in filtered_cust.columns and filtered_cust["Schedule Year"].nunique() > 1 else "No. of SIM Cards"
+    
+    fleet_data = filtered_cust.groupby("Customer Name", as_index=False)[sim_col].sum()
+    fleet_data = fleet_data.rename(columns={sim_col: "No. of SIM Cards"})
     fleet_data = fleet_data[fleet_data["No. of SIM Cards"] > 0].sort_values("No. of SIM Cards", ascending=False)
 
     if fleet_data.empty:
