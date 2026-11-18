@@ -3,7 +3,7 @@ from datetime import datetime
 import pandas as pd
 import streamlit as st
 
-from modules.config import FILE_PATH, inject_custom_css
+from modules.config import FILE_PATH, MONTHS, inject_custom_css
 from modules.data_loader import load_and_process_data, calculate_active_sims, make_excel_download
 from modules.components import money, number, safe_html, section_heading, metric_card
 from modules.charts import (
@@ -13,8 +13,14 @@ from modules.charts import (
     build_scatter_chart,
     build_annual_charts,
     build_monthly_comparison_chart,
+    build_renewal_timeline_chart,
 )
-from modules.analytics import calculate_renewal_forecast, compute_business_diagnostics
+from modules.analytics import (
+    calculate_renewal_forecast,
+    compute_business_diagnostics,
+    build_cashflow_matrix,
+    generate_executive_briefing,
+)
 
 st.set_page_config(
     page_title="Zimatics | SIM Revenue Intelligence",
@@ -282,6 +288,47 @@ with tab_overview:
     section_heading("Monthly Revenue Breakdown", "Identify the strongest and weakest months across the selected schedule years.")
     st.plotly_chart(build_monthly_comparison_chart(filtered_monthly), use_container_width=True, config={"displayModeBar": False})
 
+    # --- MONTHLY CASH FLOW & BILLING MATRIX ---
+    section_heading(
+        "Monthly Cash Flow & Billing Matrix",
+        "Inspect exact monthly billing schedules across all customer accounts (GH₵).",
+    )
+    cashflow_matrix = build_cashflow_matrix(filtered_monthly)
+    if not cashflow_matrix.empty:
+        matrix_column_config = {
+            "Customer Name": st.column_config.TextColumn("Customer Name", pinned=True),
+            "Annual Total": st.column_config.NumberColumn("Annual Total", format="GH₵ %.2f"),
+        }
+        for m in MONTHS:
+            matrix_column_config[m] = st.column_config.NumberColumn(m[:3], format="GH₵ %.0f")
+
+        st.dataframe(
+            cashflow_matrix,
+            use_container_width=True,
+            hide_index=True,
+            height=420,
+            column_config=matrix_column_config,
+        )
+
+    # --- EXECUTIVE BRIEFING NOTE GENERATOR ---
+    section_heading(
+        "Executive Briefing Note Generator",
+        "Copy-ready summary for management emails, WhatsApp updates, or board reports.",
+    )
+    renewal_summary_for_brief = calculate_renewal_forecast(filtered_cust)
+    pending_entries_count = int((filtered_cust["Total"] == 0).sum())
+    briefing_text = generate_executive_briefing(
+        selected_years=selected_years,
+        total_revenue=total_revenue,
+        total_sims=total_sims,
+        unique_customers=unique_customers,
+        average_yield=average_yield,
+        diagnostics=diagnostics,
+        pending_count=pending_entries_count,
+        renewal_df=renewal_summary_for_brief,
+    )
+    st.code(briefing_text, language="text")
+
     # --- PENDING BILLING AUDIT CALLOUT ---
     pending_rows = filtered_cust[filtered_cust["Total"] == 0]
     if not pending_rows.empty:
@@ -411,13 +458,24 @@ with tab_renewals:
 
     renewal_search = st.text_input("Filter renewal radar by customer", placeholder="Enter customer name...")
     if renewal_search.strip():
-        renewal_df = renewal_df[renewal_df["Customer Name"].str.contains(renewal_search.strip(), case=False, na=False)]
+        renewal_df = renewal_df[
+            renewal_df["Customer Name"].str.contains(renewal_search.strip(), case=False, na=False)
+        ]
 
+    st.markdown("**Contract Coverage & Expiry Timeline**")
+    fig_timeline = build_renewal_timeline_chart(renewal_df)
+    if fig_timeline:
+        st.plotly_chart(fig_timeline, use_container_width=True, config={"displayModeBar": False})
+    else:
+        st.info("No active billed contracts available to plot on the timeline.")
+
+    st.markdown("**Renewal Schedule Details**")
+    display_renewals = renewal_df.drop(columns=["Start Date", "End Date"], errors="ignore")
     st.dataframe(
-        renewal_df,
+        display_renewals,
         use_container_width=True,
         hide_index=True,
-        height=480,
+        height=440,
         column_config={
             "Customer Name": st.column_config.TextColumn("Customer Name"),
             "Schedule Year": st.column_config.NumberColumn("Schedule Year", format="%d"),
