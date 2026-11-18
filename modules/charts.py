@@ -230,3 +230,50 @@ def build_monthly_comparison_chart(filtered_monthly):
         legend=dict(orientation="h", y=1.12, x=0),
     )
     return style_figure(fig, 400)
+
+
+
+
+def build_renewal_timeline_chart(renewal_df):
+    """Builds a high-contrast contract duration & expiry timeline chart."""
+    active_df = renewal_df[renewal_df["Total Scheduled"] > 0].copy()
+    if active_df.empty:
+        return None
+
+    active_df = active_df.sort_values("End Date", ascending=True)
+    active_df["Contract Label"] = (
+        active_df["Customer Name"] + " (" + active_df["Schedule Year"].astype(str) + ")"
+    )
+
+    fig = px.timeline(
+        active_df,
+        x_start="Start Date",
+        x_end="End Date",
+        y="Contract Label",
+        color="Expected Renewal",
+        text="Expected Renewal",
+        color_discrete_sequence=PALETTE,
+        hover_data={
+            "SIMs": True,
+            "Duration (Mo.)": True,
+            "Total Scheduled": ":,.2f",
+            "Start Date": False,
+            "End Date": False,
+            "Contract Label": False,
+        },
+    )
+    fig.update_traces(
+        textposition="outside",
+        textfont=dict(color="#172B3A", size=12),
+        marker_line_color="#172B3A",
+        marker_line_width=1,
+    )
+    fig.update_yaxes(autorange="reversed", title="", automargin=True)
+    fig.update_xaxes(title="Contract Coverage & Renewal Window")
+    fig.update_layout(
+        showlegend=False,
+        margin=dict(l=20, r=90, t=30, b=30),
+    )
+    return style_figure(fig, max(380, len(active_df) * 36))
+
+
